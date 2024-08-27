@@ -10,7 +10,7 @@ Voxelamming is an AR programming learning app. Even programming beginners can le
 
 ## Resources
 
-* **Homepage:** https://creativival.github.io/voxelamming/index.en
+* **Homepage:** https://creativival.github.io/voxelamming_python
 * **Samples:** https://github.com/creativival/voxelamming/tree/main/sample/python
 
 ## Installation

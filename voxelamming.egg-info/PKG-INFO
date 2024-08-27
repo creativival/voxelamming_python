@@ -1,11 +1,8 @@
 Metadata-Version: 2.1
 Name: voxelamming
-Version: 0.3.3
+Version: 0.3.4
 Summary: Convert Python code to JSON and send it to the Voxelamming app.
-Home-page: UNKNOWN
 Author: creativival
-License: UNKNOWN
-Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
@@ -13,6 +10,7 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE.txt
+Requires-Dist: websocket-client
 
 ## voxelamming
 
@@ -26,7 +24,7 @@ Voxelamming is an AR programming learning app. Even programming beginners can le
 
 ## Resources
 
-* **Homepage:** https://creativival.github.io/voxelamming/index.en
+* **Homepage:** https://creativival.github.io/voxelamming_python
 * **Samples:** https://github.com/creativival/voxelamming/tree/main/sample/python
 
 ## Installation
@@ -358,4 +356,3 @@ This library is under active development. More features and improvements are pla
 ## Author
 
 creativival
-

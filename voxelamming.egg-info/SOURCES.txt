@@ -1,6 +1,9 @@
 LICENSE.txt
 README.md
 setup.py
+tests/test_build_box.py
+tests/test_matrix_util.py
+tests/test_turtle.py
 voxelamming/__init__.py
 voxelamming/map_util.py
 voxelamming/matrix_util.py
