@@ -14,7 +14,354 @@
 <body>
     <div class="container-fluid">
 
-<<<<<<<<<<ここに貼り付ける>>>>>>>>>>
+
+
+
+
+
+
+
+
+
+        <h1><a href="#voxelamming" id="voxelamming"></a>voxelamming</h1>
+<p>This Python library converts Python code into JSON format and sends it to the Voxelamming app using WebSockets, allowing users to create 3D voxel models by writing Python scripts.</p>
+<h2><a href="#whats-voxelamming" id="whats-voxelamming"></a>What's Voxelamming?</h2>
+<p align="center"><img src="https://creativival.github.io/voxelamming/image/voxelamming_icon.png" alt="Voxelamming Logo" width="200"/></p>
+<p>Voxelamming is an AR programming learning app. Even programming beginners can learn programming visually and enjoyably. Voxelamming supports iPhones and iPads with iOS 16 or later, and Apple Vision Pro.</p>
+<h2><a href="#resources" id="resources"></a>Resources</h2>
+<ul>
+  <li><strong>Homepage:</strong> https://creativival.github.io/voxelamming_python</li>
+  <li><strong>Samples:</strong> https://github.com/creativival/voxelamming/tree/main/sample/python</li>
+</ul>
+<h2><a href="#installation" id="installation"></a>Installation</h2>
+<pre><code class="bash">pip install voxelamming
+</code></pre>
+<h2><a href="#usage" id="usage"></a>Usage</h2>
+<h3><a href="#modeling" id="modeling"></a>Modeling</h3>
+<pre><code class="python">from voxelamming import Voxelamming
+
+# Set your room name. This should match the room name displayed in your Voxelamming app.
+room_name = &quot;1000&quot;
+
+# Create a Voxelamming instance
+voxelamming = Voxelamming(room_name)
+
+# Define Python code to create a voxel model
+voxelamming.set_box_size(0.5)
+voxelamming.set_build_interval(0.01)
+voxelamming.transform(0, 0, 0, pitch=0, yaw=0, roll=0)
+voxelamming.animate(0, 0, 10, pitch=0, yaw=30, roll=0, scale=2, interval= 10)
+
+for i in range(100):
+  voxelamming.create_box(-1, i, 0, r=0, g=1, b=1)
+  voxelamming.create_box(0, i, 0, r=1, g=0, b=0)
+  voxelamming.create_box(1, i, 0, r=1, g=1, b=0)
+  voxelamming.create_box(2, i, 0, r=0, g=1, b=1)
+
+for i in range(50):
+  voxelamming.remove_box(0, i * 2 + 1, 0)
+  voxelamming.remove_box(1, i * 2, 0)
+
+# Send the Python code to the Voxelamming app
+voxelamming.send_data()
+</code></pre>
+<h3><a href="#game-mode" id="game-mode"></a>Game Mode</h3>
+<pre><code class="python">import pyxel
+from voxelamming import Voxelamming
+
+
+class Cat:
+    def __init__(self, app):
+        self.app = app
+        self.name = 'cat_8x8'
+        self.dot_data = (
+            '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 '
+            '-1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 '
+            '9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 '
+            '-1 -1 -1 -1 9 9 -1 9 9 -1 -1'
+        )
+        self.direction = 0
+        self.x = 0
+        self.y = 0
+        self.img = 0
+        self.u = 0
+        self.v = 0
+        self.w = 8
+        self.h = 8
+        self.speed = 0.1  # Speed of the cat's movement
+        self.diameter = 4  # Initial size of the cat (diameter of the circle)
+
+    def chase(self, mouse):
+        # The cat chases the mouse
+        if self.x &lt; mouse.x:
+            self.x += self.speed
+            self.w = 8
+            self.h = 8
+            self.direction = 0
+        elif self.x &gt; mouse.x:
+            self.x -= self.speed
+            self.w = -8
+            self.h = 8
+            self.direction = -180  # Flip the image
+
+        if self.y &lt; mouse.y:
+            self.y += self.speed
+        elif self.y &gt; mouse.y:
+            self.y -= self.speed
+
+        # Gradually increase the size of the cat
+        self.diameter += 0.05
+
+
+class Mouse:
+    def __init__(self, app):
+        self.app = app
+        self.name = 'mouse_8x8'
+        self.dot_data = (
+            '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 '
+            '-1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 '
+            '13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 '
+            '-1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
+        )
+        self.direction = 0
+        self.x = 20
+        self.y = 0
+        self.img = 0
+        self.u = 0
+        self.v = 8
+        self.w = 8
+        self.h = 8
+        self.speed = 0.5  # Speed of the mouse's movement
+        self.diameter = 8  # Size of the mouse (diameter of the circle)
+
+    def move(self):
+        # Move the mouse with arrow keys
+        if pyxel.btn(pyxel.KEY_LEFT):
+            self.x -= self.speed
+            self.u = 0
+            self.v = 8
+            self.w = -8
+            self.h = 8
+            self.direction = 180  # Rotate 180 degrees
+        if pyxel.btn(pyxel.KEY_RIGHT):
+            self.x += self.speed
+            self.u = 0
+            self.v = 8
+            self.w = 8
+            self.h = 8
+            self.direction = 0
+        if pyxel.btn(pyxel.KEY_UP):
+            self.y += self.speed
+            self.u = 8
+            self.v = 8
+            self.w = 8
+            self.h = 8
+            self.direction = 90
+        if pyxel.btn(pyxel.KEY_DOWN):
+            self.y -= self.speed
+            self.u = 8
+            self.v = 8
+            self.w = 8
+            self.h = -8
+            self.direction = -90
+
+        # Limit movement within the screen
+        self.x = max(-self.app.window_width // 2, min(self.app.window_width // 2, self.x))
+        self.y = max(-self.app.window_height // 2, min(self.app.window_height // 2, self.y))
+
+
+class App:
+    def __init__(self):
+        # Initialize Pyxel
+        self.dot_size = 1  # Size of the sprite's dots displayed in the AR space (centimeters)
+        self.window_width = 64 * 4 / 3  # The width of the AR window will be multiplied by self.dot_size (centimeters)
+        self.window_height = 64  # The height of the AR window will be multiplied by self.dot_size (centimeters)
+        self.window_angle = 80  # Tilt of the AR window (degrees)
+        self.sprite_base_diameter = 8  # Base diameter of the sprite (reference value for sprite sending scale)
+        self.cat = Cat(self)
+        self.mouse = Mouse(self)
+        self.game_started = False
+        self.game_over = False
+        self.score = 0  # Initial score
+        self.last_score_update_time = 0  # Timer to update the score
+
+        # Initialize Voxelamming
+        self.vox = Voxelamming('1000')
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.8)
+        self.vox.set_game_score(self.score)
+        cat_scale = self.cat.diameter / self.sprite_base_diameter
+        mouse_scale = self.mouse.diameter / self.sprite_base_diameter
+        self.vox.create_sprite(self.cat.name, self.cat.dot_data, self.cat.x, self.cat.y, self.cat.direction, cat_scale,
+                               True)
+        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y, self.mouse.direction,
+                               mouse_scale, True)
+        self.vox.send_data()
+        self.vox.clear_data()
+
+        pyxel.init(self.window_width, self.window_height, title='Cat Game')
+
+        pyxel.load('my_resource.pyxres')
+
+        pyxel.run(self.update, self.draw)
+
+    def update(self):
+        if not self.game_started:
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                self.reset_game()
+            return
+
+        if self.game_over:
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                self.reset_game()
+            return
+
+        self.mouse.move()  # Update the position of the mouse
+        self.cat.chase(self.mouse)  # The cat chases the mouse
+
+        # Collision detection: Game over when the cat's circle touches the mouse
+        if ((self.cat.x - self.mouse.x) ** 2 + (self.cat.y - self.mouse.y) ** 2) &lt; (
+                self.cat.diameter / 2 + self.mouse.diameter / 2) ** 2:
+            self.game_over = True
+
+            # Send game over (change the window to red)
+            self.vox.set_box_size(self.dot_size)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0, alpha=0.8)
+            self.vox.set_game_score(self.score)
+            self.vox.set_command('gameOver')
+            self.vox.send_data()
+            self.vox.clear_data()
+
+        # Add score every second
+        if pyxel.frame_count - self.last_score_update_time &gt;= 30:  # Pyxel's default FPS is 30
+            self.score += 1
+            self.last_score_update_time = pyxel.frame_count
+
+        # Send sprite information every 0.1 seconds
+        if pyxel.frame_count - self.last_score_update_time &gt;= 3:  # Pyxel's default FPS is 30
+            if not self.game_over:  # Do not send immediately after game over
+                self.vox.set_box_size(self.dot_size)
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.5)
+                self.vox.set_game_score(self.score)
+                cat_scale = self.cat.diameter / self.sprite_base_diameter
+                mouse_scale = self.mouse.diameter / self.sprite_base_diameter
+                self.vox.move_sprite(self.cat.name, self.cat.x, self.cat.y, self.cat.direction, cat_scale, True)
+                self.vox.move_sprite(self.mouse.name, self.mouse.x, self.mouse.y, self.mouse.direction, mouse_scale, True)
+                self.vox.send_data()
+                self.vox.clear_data()
+
+    def draw(self):
+        pyxel.cls(1)
+
+        # Display the score at the top left
+        pyxel.text(2, 2, f&quot;Score: {self.score}&quot;, pyxel.COLOR_WHITE)
+
+        if not self.game_started:
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, &quot;Click to start&quot;,
+                       pyxel.frame_count % 16)
+            self.draw_cursor()  # Draw custom cursor
+            return
+
+        if self.game_over:
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, &quot;Game Over!&quot;, pyxel.frame_count % 16)
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, &quot;Click to start&quot;,
+                       pyxel.frame_count % 16)
+            self.draw_cursor()  # Draw custom cursor
+            return
+
+        # Draw a circle that gradually grows larger
+        cat_x, cat_y = self.get_sprite_position(self.cat.x, self.cat.y)
+        pyxel.circ(cat_x + 4, cat_y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
+
+        # Draw the cat's sprite
+        pyxel.blt(cat_x, cat_y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
+
+        # Draw the mouse's sprite
+        mouse_x, mouse_y = self.get_sprite_position(self.mouse.x, self.mouse.y)
+        pyxel.blt(mouse_x, mouse_y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
+
+    def get_sprite_position(self, x, y):
+        return self.window_width // 2 + x - 4, self.window_height // 2 - y - 4
+
+    def reset_game(self):
+        self.score = 0  # Reset score
+        self.last_score_update_time = pyxel.frame_count  # Reset timer
+        self.cat = Cat(self)  # Initialize the cat (position, size)
+        self.mouse = Mouse(self)  # Initialize the mouse (position)
+        self.game_started = True
+        self.game_over = False
+
+    @staticmethod
+    def draw_cursor():
+        cursor_x = pyxel.mouse_x
+        cursor_y = pyxel.mouse_y
+        pyxel.blt(cursor_x - 4, cursor_y - 4, 0, 0, 16, 8, 8, 1)
+
+
+App()
+</code></pre>
+<p>This code snippet demonstrates a simple example where a red voxel is created at a specific location. You can use various functions provided by the <code>Voxelamming</code> class to build more complex models.</p>
+<h4><a href="#method-description" id="method-description"></a>Method description</h4>
+<table>
+  <thead>
+    <tr><th> Modeling Method name                                                                                </th><th> Description </th><th> Arguments </th></tr>
+  </thead>
+  <tbody>
+    <tr><td> <code>set_room_name(room_name)</code>                                                                 </td><td> Sets the room name for communicating with the device. </td><td> <code>room_name</code>: Room name (string) </td></tr>
+    <tr><td> <code>set_box_size(size)</code>                                                                       </td><td> Sets the size of the voxel (default: 1.0). </td><td> <code>size</code>: Size (float) </td></tr>
+    <tr><td> <code>set_build_interval(interval)</code>                                                             </td><td> Sets the placement interval of the voxels (default: 0.01 seconds). </td><td> <code>interval</code>: Interval (float) </td></tr>
+    <tr><td> <code>change_shape(shape)</code>                                                                      </td><td> Changes the shape of the voxel. </td><td> <code>shape</code>: Shape (&quot;box&quot;, &quot;sphere&quot;, &quot;plane&quot;) </td></tr>
+    <tr><td> <code>change_material(is_metallic, roughness)</code>                                                  </td><td> Changes the material of the voxel. </td><td> <code>is_metallic</code>: Whether to make it metallic (boolean), <code>roughness</code>: Roughness (float) </td></tr>
+    <tr><td> <code>create_box(x, y, z, r, g, b, alpha)</code>                                                      </td><td> Places a voxel. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Position (float), <code>r</code>, <code>g</code>, <code>b</code>, <code>alpha</code>: Color (float, 0-1) </td></tr>
+    <tr><td> <code>create_box(x, y, z, texture)</code>                                                             </td><td> Places a voxel with texture. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Position (float), <code>texture</code>: Texture name (string) </td></tr>
+    <tr><td> <code>remove_box(x, y, z)</code>                                                                      </td><td> Removes a voxel. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Position (float) </td></tr>
+    <tr><td> <code>write_sentence(sentence, x, y, z, r, g, b, alpha)</code>                                        </td><td> Draws a string with voxels. </td><td> <code>sentence</code>: String (string), <code>x</code>, <code>y</code>, <code>z</code>: Position (float), <code>r</code>, <code>g</code>, <code>b</code>, <code>alpha</code>: Color (float, 0-1) </td></tr>
+    <tr><td> <code>set_light(x, y, z, r, g, b, alpha, intensity, interval, light_type)</code>                      </td><td> Places a light. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Position (float), <code>r</code>, <code>g</code>, <code>b</code>, <code>alpha</code>: Color (float, 0-1), <code>intensity</code>: Intensity (float), <code>interval</code>: Blinking interval (float), <code>light_type</code>: Type of light (&quot;point&quot;, &quot;spot&quot;, &quot;directional&quot;) </td></tr>
+    <tr><td> <code>set_command(command)</code>                                                                     </td><td> Executes a command. </td><td> <code>command</code>: Command (&quot;axis&quot;, &quot;japaneseCastle&quot;, &quot;float&quot;, &quot;liteRender&quot;) </td></tr>
+    <tr><td> <code>draw_line(x1, y1, z1, x2, y2, z2, r, g, b, alpha)</code>                                        </td><td> Draws a line between two points. </td><td> <code>x1</code>, <code>y1</code>, <code>z1</code>: Starting point (float), <code>x2</code>, <code>y2</code>, <code>z2</code>: Ending point (float), <code>r</code>, <code>g</code>, <code>b</code>, <code>alpha</code>: Color (float, 0-1) </td></tr>
+    <tr><td> <code>create_model(model_name, x, y, z, pitch, yaw, roll, scale, entity_name)</code>                  </td><td> Creates a built-in model (USDZ). </td><td>  <code>model_name</code>: Name of the model (string), <code>x</code>, <code>y</code>, <code>z</code>: Translation values (float), <code>pitch</code>, <code>yaw</code>, <code>roll</code>: Rotation values (float), <code>scale</code>: Scale (float), <code>entity_name</code>: Name assigned to the created model (string) </td></tr>
+    <tr><td> <code>move_model(entity_name, x, y, z, pitch, yaw, roll, scale)</code>                                </td><td> Moves the created model (USDZ). </td><td>  <code>entity_name</code>: Name assigned to the created model (string), <code>x</code>, <code>y</code>, <code>z</code>: Translation values (float), <code>pitch</code>, <code>yaw</code>, <code>roll</code>: Rotation values (float), <code>scale</code>: Scale (float) </td></tr>
+    <tr><td> <code>send_data(name)</code>                                                                          </td><td> Sends voxel data to the device; if the name argument is set, the voxel data can be stored and reproduced as history. </td><td> </td></tr>
+    <tr><td> <code>clear_data()</code>                                                                             </td><td> Initializes voxel data. </td><td> </td></tr>
+    <tr><td> <code>transform(x, y, z, pitch, yaw, roll)</code>                                                     </td><td> Moves and rotates the coordinate system of the voxel. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Translation amount (float), <code>pitch</code>, <code>yaw</code>, <code>roll</code>: Rotation amount (float) </td></tr>
+    <tr><td> <code>animate(x, y, z, pitch, yaw, roll, scale, interval)</code>                                      </td><td> Animates a voxel. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Translation amount (float), <code>pitch</code>, <code>yaw</code>, <code>roll</code>: Rotation amount (float), <code>scale</code>: Scale (float), <code>interval</code>: Interval (float) </td></tr>
+    <tr><td> <code>animate_global(x, y, z, pitch, yaw, roll, scale, interval)</code>                               </td><td> Animates all voxels. </td><td> <code>x</code>, <code>y</code>, <code>z</code>: Translation amount (float), <code>pitch</code>, <code>yaw</code>, <code>roll</code>: Rotation amount (float), <code>scale</code>: Scale (float), <code>interval</code>: Interval (float) </td></tr>
+    <tr><td> <code>push_matrix()</code>                                                                            </td><td> Saves the current coordinate system to the stack. </td><td> </td></tr>
+    <tr><td> <code>pop_matrix()</code>                                                                             </td><td> Restores the coordinate system from the stack. </td><td> </td></tr>
+    <tr><td> <code>frame_in()</code>                                                                               </td><td> Starts recording a frame. </td><td> </td></tr>
+    <tr><td> <code>frame_out()</code>                                                                              </td><td> Ends recording a frame. </td><td> </td></tr>
+    <tr><td> <code>set_frame_fps(fps)</code>                                                                       </td><td> Sets the frame rate (default: 2). </td><td> <code>fps</code>: Frame rate (int) </td></tr>
+    <tr><td> <code>set_frame_repeats(repeats)</code>                                                               </td><td> Sets the number of frame repetitions (default: 10). </td><td> <code>repeats</code>: Number of repetitions (int) </td></tr>
+    <tr><td> Game Method Name                                                                           </td><td> Description </td><td> Arguments                                                                                                                                                            </td></tr>
+    <tr><td> <code>set_game_screen_size(width, height, angle=90, r=1, g=1, b=0, alpha=0.5)</code>                  </td><td> Sets the game screen size. </td><td> <code>width</code>, <code>height</code>: screen size (float), <code>angle</code>: angle (float), <code>r</code>, <code>g</code>, <code>b</code>, <code>alpha</code>: color (float, 0-1)                                                            </td></tr>
+    <tr><td> <code>set_game_score(score)</code>                                                                    </td><td> Sets the game score. </td><td> <code>score</code>: game score (int)                                                                                                                                            </td></tr>
+    <tr><td> <code>send_game_over()</code>                                                                         </td><td> Triggers game over. </td><td>                                                                                                                                                                     </td></tr>
+    <tr><td> <code>create_sprite(sprite_name, color_list, x, y, direction=90, scale=1, visible=True)</code>        </td><td> Creates a sprite. </td><td> <code>sprite_name</code>: sprite name (string), <code>color_list</code>: dot color data (string), <code>x</code>, <code>y</code>: position (float), <code>direction</code>: angle (float), <code>scale</code>: scale (float), <code>visible</code>: visibility (boolean) </td></tr>
+    <tr><td> <code>move_sprite(sprite_name, x, y, direction=90, scale=1, visible=True)</code>                      </td><td> Moves a sprite. </td><td> <code>sprite_name</code>: sprite name (string), <code>x</code>, <code>y</code>: position (float), <code>direction</code>: angle (float), <code>scale</code>: scale (float), <code>visible</code>: visibility (boolean)                                  </td></tr>
+  </tbody>
+</table>
+<h2><a href="#notes" id="notes"></a>Notes</h2>
+<ul>
+  <li>Ensure that the Voxelamming app is running and connected to the same room name specified in your Python script.</li>
+  <li>This library requires Python 3.9 or higher.</li>
+  <li>Executing arbitrary Python code can be a security risk. Be cautious when running code from untrusted sources.</li>
+</ul>
+<p>This library is under active development. More features and improvements are planned for future releases.</p>
+<h2><a href="#license" id="license"></a>License</h2>
+<p><a href="https://github.com/creativival/voxelamming/blob/master/LICENSE">MIT License</a></p>
+<h2><a href="#author" id="author"></a>Author</h2>
+<p>creativival</p>
+
+
+
+
+
+
+
+
+
+
+
 
     </div>
 
