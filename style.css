@@ -1,0 +1,53 @@
+/* Table */
+.custom-table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    overflow-x: auto; /* 必要に応じてスクロール */
+}
+
+.custom-table table {
+    width: 100%;
+    max-width: 100%;
+}
+
+.custom-table th, .custom-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    word-wrap: break-word;
+    word-break: break-word; /* 追加 */
+    white-space: normal; /* 追加: テキストを改行可能に */
+    overflow-wrap: break-word; /* 追加: 長い単語を折り返す */
+}
+
+.custom-table th {
+    background-color: #f2f2f2;
+}
+
+/* 列の幅を適切に調整 */
+.custom-table th:nth-child(2), .custom-table td:nth-child(2) {
+    width: 50%; /* 必要に応じて調整 */
+}
+
+.custom-table th:nth-child(3), .custom-table td:nth-child(3) {
+    width: 30%; /* 必要に応じて調整 */
+}
+
+.custom-table th:nth-child(1), .custom-table td:nth-child(1) {
+    width: 20%; /* 必要に応じて調整 */
+}
+
+.vditor-reset table.custom-table {
+    display: table; /* display: block; を上書き */
+    overflow: visible; /* overflow: auto; を上書き */
+    width: 100%; /* 幅を100%に固定 */
+    word-break: break-word; /* 長い単語を折り返す */
+}
+
+.vditor-reset table td, .vditor-reset table th {
+    word-wrap: break-word;
+    word-break: break-word; /* 追加 */
+    white-space: normal; /* 追加: テキストを改行可能に */
+    overflow-wrap: break-word; /* 追加: 長い単語を折り返す */
+}
