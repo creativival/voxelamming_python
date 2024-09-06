@@ -23,21 +23,21 @@
 
 
 
-        <h1><a href="#voxelamming" id="voxelamming"></a>voxelamming</h1>
+<h2>voxelamming</h2>
 <p>This Python library converts Python code into JSON format and sends it to the Voxelamming app using WebSockets, allowing users to create 3D voxel models by writing Python scripts.</p>
-<h2><a href="#whats-voxelamming" id="whats-voxelamming"></a>What's Voxelamming?</h2>
+<h2>What's Voxelamming?</h2>
 <p align="center"><img src="https://creativival.github.io/voxelamming/image/voxelamming_icon.png" alt="Voxelamming Logo" width="200"/></p>
 <p>Voxelamming is an AR programming learning app. Even programming beginners can learn programming visually and enjoyably. Voxelamming supports iPhones and iPads with iOS 16 or later, and Apple Vision Pro.</p>
-<h2><a href="#resources" id="resources"></a>Resources</h2>
+<h2>Resources</h2>
 <ul>
   <li><strong>Homepage:</strong> https://creativival.github.io/voxelamming_python</li>
   <li><strong>Samples:</strong> https://github.com/creativival/voxelamming/tree/main/sample/python</li>
 </ul>
-<h2><a href="#installation" id="installation"></a>Installation</h2>
+<h2>Installation</h2>
 <pre><code class="bash">pip install voxelamming
 </code></pre>
-<h2><a href="#usage" id="usage"></a>Usage</h2>
-<h3><a href="#modeling" id="modeling"></a>Modeling</h3>
+<h2>Usage</h2>
+<h3>Modeling</h3>
 <pre><code class="python">from voxelamming import Voxelamming
 
 # Set your room name. This should match the room name displayed in your Voxelamming app.
@@ -65,243 +65,339 @@ for i in range(50):
 # Send the Python code to the Voxelamming app
 voxelamming.send_data()
 </code></pre>
-<h3><a href="#game-mode" id="game-mode"></a>Game Mode</h3>
+<h3>Game Mode</h3>
 <pre><code class="python">import pyxel
-from voxelamming import Voxelamming
+import time
+import random
+# from voxelamming import Voxelamming
+from voxelamming_local import Voxelamming  # Use this when developing locally
 
 
-class Cat:
-    def __init__(self, app):
-        self.app = app
-        self.name = 'cat_8x8'
-        self.dot_data = (
-            '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 '
-            '-1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 '
-            '9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 '
-            '-1 -1 -1 -1 9 9 -1 9 9 -1 -1'
-        )
+class Player:
+    name = 'spaceship_8x8'
+    dot_data = (
+        '-1 -1 -1 8 8 -1 -1 -1 -1 -1 3 7 7 3 -1 -1 -1 -1 -1 7 7 -1 -1 -1 -1 -1 7 7 7 7 -1 -1 -1 7 7 7 7 7 7 -1 3 7'
+        ' 7 7 7 7 7 3 -1 8 8 7 7 8 8 -1 -1 -1 -1 8 8 -1 -1 -1'
+    )
+
+    def __init__(self, x, y, speed):
         self.direction = 0
-        self.x = 0
-        self.y = 0
+        self.x = x
+        self.y = y
         self.img = 0
         self.u = 0
         self.v = 0
         self.w = 8
         self.h = 8
-        self.speed = 0.1  # Speed of the cat's movement
-        self.diameter = 4  # Initial size of the cat (diameter of the circle)
+        self.speed = speed
 
-    def chase(self, mouse):
-        # The cat chases the mouse
-        if self.x &lt; mouse.x:
-            self.x += self.speed
-            self.w = 8
-            self.h = 8
-            self.direction = 0
-        elif self.x &gt; mouse.x:
+    def update(self):
+        if pyxel.btn(pyxel.KEY_LEFT):
             self.x -= self.speed
-            self.w = -8
-            self.h = 8
-            self.direction = -180  # Flip the image
-
-        if self.y &lt; mouse.y:
-            self.y += self.speed
-        elif self.y &gt; mouse.y:
-            self.y -= self.speed
-
-        # Gradually increase the size of the cat
-        self.diameter += 0.05
+        if pyxel.btn(pyxel.KEY_RIGHT):
+            self.x += self.speed
 
 
-class Mouse:
-    def __init__(self, app):
-        self.app = app
-        self.name = 'mouse_8x8'
-        self.dot_data = (
-            '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 '
-            '-1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 '
-            '13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 '
-            '-1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
-        )
+class Enemy:
+    name = 'enemy_8x8'
+    dot_data = (
+        '-1 -1 3 -1 -1 3 -1 -1 -1 3 -1 3 3 -1 3 -1 3 -1 3 3 3 3 -1 3 3 3 3 3 3 3 3 3 3 3 -1 3 3 -1 3 3 3 3 3 3 3 3'
+        ' 3 3 -1 3 3 -1 -1 3 3 -1 3 -1 -1 -1 -1 -1 -1 3'
+    )
+
+    def __init__(self, x, y):
         self.direction = 0
-        self.x = 20
-        self.y = 0
+        self.x = x
+        self.y = y
         self.img = 0
         self.u = 0
         self.v = 8
         self.w = 8
         self.h = 8
-        self.speed = 0.5  # Speed of the mouse's movement
-        self.diameter = 8  # Size of the mouse (diameter of the circle)
 
-    def move(self):
-        # Move the mouse with arrow keys
-        if pyxel.btn(pyxel.KEY_LEFT):
-            self.x -= self.speed
-            self.u = 0
-            self.v = 8
-            self.w = -8
-            self.h = 8
-            self.direction = 180  # Rotate 180 degrees
-        if pyxel.btn(pyxel.KEY_RIGHT):
-            self.x += self.speed
-            self.u = 0
-            self.v = 8
-            self.w = 8
-            self.h = 8
-            self.direction = 0
-        if pyxel.btn(pyxel.KEY_UP):
-            self.y += self.speed
-            self.u = 8
-            self.v = 8
-            self.w = 8
-            self.h = 8
-            self.direction = 90
-        if pyxel.btn(pyxel.KEY_DOWN):
-            self.y -= self.speed
-            self.u = 8
-            self.v = 8
-            self.w = 8
-            self.h = -8
-            self.direction = -90
 
-        # Limit movement within the screen
-        self.x = max(-self.app.window_width // 2, min(self.app.window_width // 2, self.x))
-        self.y = max(-self.app.window_height // 2, min(self.app.window_height // 2, self.y))
+class Missile:
+    def __init__(self, x, y, color_id, direction=0, width=1, height=1):
+        self.x = x
+        self.y = y
+        self.direction = direction
+        self.color_id = color_id
+        self.width = width
+        self.height = height
 
 
 class App:
     def __init__(self):
-        # Initialize Pyxel
-        self.dot_size = 1  # Size of the sprite's dots displayed in the AR space (centimeters)
-        self.window_width = 64 * 4 / 3  # The width of the AR window will be multiplied by self.dot_size (centimeters)
-        self.window_height = 64  # The height of the AR window will be multiplied by self.dot_size (centimeters)
-        self.window_angle = 80  # Tilt of the AR window (degrees)
-        self.sprite_base_diameter = 8  # Base diameter of the sprite (reference value for sprite sending scale)
-        self.cat = Cat(self)
-        self.mouse = Mouse(self)
-        self.game_started = False
+        # Pyxel settings
+        self.window_width = 160  # The width of the AR window becomes the value multiplied by self.dot_size (in centimeters)
+        self.window_height = 120  # The height of the AR window becomes the value multiplied by self.dot_size (in centimeters)
+        self.score = 0
         self.game_over = False
-        self.score = 0  # Initial score
-        self.last_score_update_time = 0  # Timer to update the score
+        self.game_clear = False
 
-        # Initialize Voxelamming
+        # Player settings
+        self.player = Player(self.window_width // 2, self.window_height - 10, 2)
+        self.missiles = []
+        self.player_missile_speed = 2
+
+        # Enemy settings
+        self.enemy_rows = 3
+        self.enemy_cols = 6
+        self.enemy_speed = 1
+        self.enemy_direction = 1
+        self.enemies = []
+        self.enemy_missiles = []
+        self.enemy_missile_speed = 2
+
+        # Initialize enemies
+        for row in range(self.enemy_rows):
+            for col in range(self.enemy_cols):
+                enemy_x = col * 16 + 20
+                enemy_y = row * 12 + 20
+                enemy = Enemy(enemy_x, enemy_y)
+                self.enemies.append(enemy)
+
+        # Voxelamming settings (executed before Pyxel initialization)
+        self.dot_size = 1  # The size of the sprite dots displayed in the AR space (in centimeters)
+        self.window_angle = 80  # Tilt angle of the AR window (in degrees)
         self.vox = Voxelamming('1000')
-        self.vox.set_box_size(self.dot_size)
-        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.8)
-        self.vox.set_game_score(self.score)
-        cat_scale = self.cat.diameter / self.sprite_base_diameter
-        mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-        self.vox.create_sprite(self.cat.name, self.cat.dot_data, self.cat.x, self.cat.y, self.cat.direction, cat_scale,
-                               True)
-        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y, self.mouse.direction,
-                               mouse_scale, True)
-        self.vox.send_data()
-        self.vox.clear_data()
+        self.init_voxelamming()
 
-        pyxel.init(self.window_width, self.window_height, title='Cat Game')
-
-        pyxel.load('my_resource.pyxres')
-
+        # Pyxel initialization
+        pyxel.init(self.window_width, self.window_height, title=&quot;Pyxel Invader Game&quot;, fps=30)
+        pyxel.mouse(True)
+        pyxel.load(&quot;invader_game.pyxres&quot;)
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        if not self.game_started:
+        if self.game_over or self.game_clear:
+            # Show cursor
+            pyxel.mouse(True)
+
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
                 self.reset_game()
             return
 
-        if self.game_over:
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-                self.reset_game()
-            return
+        # Hide cursor
+        pyxel.mouse(False)
 
-        self.mouse.move()  # Update the position of the mouse
-        self.cat.chase(self.mouse)  # The cat chases the mouse
+        # Player controls
+        self.player.update()
 
-        # Collision detection: Game over when the cat's circle touches the mouse
-        if ((self.cat.x - self.mouse.x) ** 2 + (self.cat.y - self.mouse.y) ** 2) &lt; (
-                self.cat.diameter / 2 + self.mouse.diameter / 2) ** 2:
-            self.game_over = True
+        if pyxel.btnp(pyxel.KEY_SPACE):
+            missile_x = self.player.x + self.player_missile_speed
+            missile_y = self.player.y
+            missile_clor_id = 10  # Blue
+            missile_direction = 0
+            missile_width = 2
+            missile_height = 4
+            self.missiles.append(
+                Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
 
-            # Send game over (change the window to red)
-            self.vox.set_box_size(self.dot_size)
-            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0, alpha=0.8)
-            self.vox.set_game_score(self.score)
-            self.vox.set_command('gameOver')
-            self.vox.send_data()
-            self.vox.clear_data()
+        # Move missiles
+        for missile in self.missiles[:]:
+            missile.y -= 2
+            if missile.y &lt; 0:
+                self.missiles.remove(missile)
 
-        # Add score every second
-        if pyxel.frame_count - self.last_score_update_time &gt;= 30:  # Pyxel's default FPS is 30
-            self.score += 1
-            self.last_score_update_time = pyxel.frame_count
+        # Move enemies
+        move_down = False
+        for enemy in self.enemies:
+            enemy.x += self.enemy_speed * self.enemy_direction
 
-        # Send sprite information every 0.1 seconds
-        if pyxel.frame_count - self.last_score_update_time &gt;= 3:  # Pyxel's default FPS is 30
-            if not self.game_over:  # Do not send immediately after game over
-                self.vox.set_box_size(self.dot_size)
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.5)
-                self.vox.set_game_score(self.score)
-                cat_scale = self.cat.diameter / self.sprite_base_diameter
-                mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-                self.vox.move_sprite(self.cat.name, self.cat.x, self.cat.y, self.cat.direction, cat_scale, True)
-                self.vox.move_sprite(self.mouse.name, self.mouse.x, self.mouse.y, self.mouse.direction, mouse_scale, True)
-                self.vox.send_data()
-                self.vox.clear_data()
+        for enemy in self.enemies:
+            if enemy.x &gt; pyxel.width - 8 or enemy.x &lt; 0:
+                self.enemy_direction *= -1
+                move_down = True
+                break  # Change direction immediately when reaching the edge
+
+        if move_down:
+            for enemy in self.enemies:
+                enemy.y += 8
+
+                # Game over if the enemy reaches the bottom of the screen
+                if enemy.y &gt; pyxel.height - 16:
+                    self.game_over = True
+
+        # Enemy missile firing
+        if random.random() &lt; 0.03 and self.enemies:
+            shooting_enemy = random.choice(self.enemies)
+            missile_x = shooting_enemy.x + 4
+            missile_y = shooting_enemy.y + 8
+            missile_clor_id = 8  # Red
+            missile_direction = 0
+            missile_width = 2
+            missile_height = 4
+            self.enemy_missiles.append(
+                Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
+
+        # Move enemy missiles
+        for missile in self.enemy_missiles[:]:
+            missile.y += self.enemy_missile_speed
+            if missile.y &gt; pyxel.height * 2:
+                self.enemy_missiles.remove(missile)
+
+        # Collision detection between missiles and enemies
+        for missile in self.missiles[:]:
+            for enemy in self.enemies[:]:
+                if (enemy.x &lt; missile.x &lt; enemy.x + 16 and
+                        enemy.y &lt; missile.y &lt; enemy.y + 12):
+                    self.missiles.remove(missile)
+                    self.enemies.remove(enemy)
+                    self.score += 10
+                    break
+
+        # Collision detection between player and enemy missiles
+        for missile in self.enemy_missiles[:]:
+            if (self.player.x &lt; missile.x &lt; self.player.x + 8 and
+                    self.player.y &lt; missile.y &lt; self.player.y + 8):
+                self.game_over = True
+
+        # Collision detection between player and enemies
+        for enemy in self.enemies:
+            if (self.player.x &lt; enemy.x &lt; self.player.x + 8 and
+                    self.player.y &lt; enemy.y &lt; self.player.y + 8):
+                self.game_over = True
+
+        # Check for game clear
+        if not self.enemies:
+            self.game_clear = True
+
+        # Update Voxelamming
+        self.update_voxelamming()
 
     def draw(self):
-        pyxel.cls(1)
+        pyxel.cls(0)
+        pyxel.text(5, 4, f&quot;Score: {self.score}&quot;, 7)
 
-        # Display the score at the top left
-        pyxel.text(2, 2, f&quot;Score: {self.score}&quot;, pyxel.COLOR_WHITE)
-
-        if not self.game_started:
-            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, &quot;Click to start&quot;,
-                       pyxel.frame_count % 16)
-            self.draw_cursor()  # Draw custom cursor
-            return
-
-        if self.game_over:
-            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, &quot;Game Over!&quot;, pyxel.frame_count % 16)
+        if self.game_clear:
+            pyxel.text(pyxel.width // 2 - 20, pyxel.height // 2, &quot;GAME CLEAR!&quot;, pyxel.frame_count % 16)
             pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, &quot;Click to start&quot;,
                        pyxel.frame_count % 16)
-            self.draw_cursor()  # Draw custom cursor
-            return
+        elif self.game_over:
+            pyxel.text(pyxel.width // 2 - 20, pyxel.height // 2, &quot;GAME OVER&quot;, pyxel.frame_count % 16)
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, &quot;Click to start&quot;,
+                       pyxel.frame_count % 16)
+        else:
+            # Draw player
+            pyxel.blt(self.player.x, self.player.y, self.player.img, self.player.u, self.player.v, self.player.w,
+                      self.player.h, 0)
 
-        # Draw a circle that gradually grows larger
-        cat_x, cat_y = self.get_sprite_position(self.cat.x, self.cat.y)
-        pyxel.circ(cat_x + 4, cat_y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
+            # Draw enemies
+            for enemy in self.enemies:
+                pyxel.blt(enemy.x, enemy.y, enemy.img, enemy.u, enemy.v, enemy.w, enemy.h, 0)
 
-        # Draw the cat's sprite
-        pyxel.blt(cat_x, cat_y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
+            # Draw missiles
+            for missile in self.missiles:
+                pyxel.rect(missile.x, missile.y, missile.width, missile.height, missile.color_id)
 
-        # Draw the mouse's sprite
-        mouse_x, mouse_y = self.get_sprite_position(self.mouse.x, self.mouse.y)
-        pyxel.blt(mouse_x, mouse_y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
-
-    def get_sprite_position(self, x, y):
-        return self.window_width // 2 + x - 4, self.window_height // 2 - y - 4
+            # Draw enemy missiles
+            for missile in self.enemy_missiles:
+                pyxel.rect(missile.x, missile.y, missile.width, missile.height, missile.color_id)
 
     def reset_game(self):
         self.score = 0  # Reset score
-        self.last_score_update_time = pyxel.frame_count  # Reset timer
-        self.cat = Cat(self)  # Initialize the cat (position, size)
-        self.mouse = Mouse(self)  # Initialize the mouse (position)
-        self.game_started = True
         self.game_over = False
+        self.game_clear = False
 
-    @staticmethod
-    def draw_cursor():
-        cursor_x = pyxel.mouse_x
-        cursor_y = pyxel.mouse_y
-        pyxel.blt(cursor_x - 4, cursor_y - 4, 0, 0, 16, 8, 8, 1)
+        # Player settings
+        self.player = Player(self.window_width // 2, self.window_height - 10, 2)
+        self.missiles = []
+
+        # Enemy settings
+        self.enemy_rows = 3
+        self.enemy_cols = 6
+        self.enemy_speed = 1
+        self.enemy_direction = 1
+        self.enemies = []
+        self.enemy_missiles = []
+        self.enemy_missile_speed = 2
+
+        # Initialize enemies
+        for row in range(self.enemy_rows):
+            for col in range(self.enemy_cols):
+                enemy_x = col * 16 + 20
+                enemy_y = row * 12 + 20
+                enemy = Enemy(enemy_x, enemy_y)
+                self.enemies.append(enemy)
+
+    def init_voxelamming(self):
+
+        # Initialize Voxelamming
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
+                                 alpha=0.8)
+        self.vox.set_game_score(self.score)
+
+        # Display the player's sprite
+        vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+        self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y, self.player.direction, 1)
+
+        # Since there are multiple enemies, create a template and display it in multiple locations
+        self.vox.create_sprite(Enemy.name, Enemy.dot_data)
+        for enemy in self.enemies:
+            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+            self.vox.move_sprite(enemy.name, vox_x, vox_y, enemy.direction, 1)
+
+        self.vox.send_data()
+        self.vox.clear_data()
+
+    def update_voxelamming(self):
+        # Send sprite information every 0.1 seconds
+        if pyxel.frame_count % 3 == 0 or self.game_clear or self.game_over:  # Default Pyxel FPS is 30
+            self.vox.set_box_size(self.dot_size)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
+                                     blue=0, alpha=0.5)
+            self.vox.set_game_score(self.score, -66, 57)
+
+            # Move sprites
+            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+            self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
+
+            # Enemy movement is displayed as templates in multiple locations
+            for enemy in self.enemies:
+                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+                self.vox.move_sprite_clone(enemy.name, vox_x, vox_y, enemy.direction, 1)
+
+            # Missiles are displayed as dots
+            for missile in self.missiles + self.enemy_missiles:
+                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.width, missile.height)
+                self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
+                                     missile.height)
+
+            # Change the screen to blue and display the game clear
+            if self.game_clear:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=0, green=0,
+                                         blue=1, alpha=0.8)
+                self.vox.set_command('gameClear')
+
+            # Change the screen to red and display game over
+            if self.game_over:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
+                                         blue=0, alpha=0.8)
+                self.vox.set_command('gameOver')
+
+            self.vox.send_data()
+
+            # Wait for 1 second after game clear or game over, then send data again
+            if self.game_clear or self.game_over:
+                time.sleep(1)
+                self.vox.send_data()
+
+            self.vox.clear_data()
+
+    def convert_sprite_position_to_voxelamming(self, x, y):
+        return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
+
+    def convert_dot_position_to_voxelamming(self, x, y, width=1, height=1):
+        return x - self.window_width // 2 + width / 2, self.window_height // 2 - (y + height / 2)
 
 
-App()
+if __name__ == &quot;__main__&quot;:
+    App()
 </code></pre>
 <p>This code snippet demonstrates a simple example where a red voxel is created at a specific location. You can use various functions provided by the <code>Voxelamming</code> class to build more complex models.</p>
-<h4><a href="#method-description" id="method-description"></a>Method description</h4>
+<h4>Method description</h4>
 <table>
   <thead>
     <tr><th> Modeling Method name                                                                                </th><th> Description </th><th> Arguments </th></tr>
@@ -336,21 +432,27 @@ App()
     <tr><td> <code>set_game_screen_size(width, height, angle=90, r=1, g=1, b=0, alpha=0.5)</code>                  </td><td> Sets the game screen size. </td><td> <code>width</code>, <code>height</code>: screen size (float), <code>angle</code>: angle (float), <code>r</code>, <code>g</code>, <code>b</code>, <code>alpha</code>: color (float, 0-1)                                                            </td></tr>
     <tr><td> <code>set_game_score(score)</code>                                                                    </td><td> Sets the game score. </td><td> <code>score</code>: game score (int)                                                                                                                                            </td></tr>
     <tr><td> <code>send_game_over()</code>                                                                         </td><td> Triggers game over. </td><td>                                                                                                                                                                     </td></tr>
+    <tr><td> <code>send_game_clear()</code>                                                                  </td><td> Triggers game clear. </td><td>                                                                                                                                                                   </td></tr>
     <tr><td> <code>create_sprite(sprite_name, color_list, x, y, direction=90, scale=1, visible=True)</code>        </td><td> Creates a sprite. </td><td> <code>sprite_name</code>: sprite name (string), <code>color_list</code>: dot color data (string), <code>x</code>, <code>y</code>: position (float), <code>direction</code>: angle (float), <code>scale</code>: scale (float), <code>visible</code>: visibility (boolean) </td></tr>
     <tr><td> <code>move_sprite(sprite_name, x, y, direction=90, scale=1, visible=True)</code>                      </td><td> Moves a sprite. </td><td> <code>sprite_name</code>: sprite name (string), <code>x</code>, <code>y</code>: position (float), <code>direction</code>: angle (float), <code>scale</code>: scale (float), <code>visible</code>: visibility (boolean)                                  </td></tr>
+    <tr><td> <code>move_sprite_clone(sprite_name, x, y, direction=90, scale=1,)</code>               </td><td> Moves a clone of the sprite. Can be executed multiple times and is used when creating multiple sprites. </td><td> <code>sprite_name</code>: Sprite name (string), <code>x</code>, <code>y</code>: Position (float), <code>direction</code>: Direction (float), <code>scale</code>: Scale (float)                                  </td></tr>
+    <tr><td> <code>display_dot(sprite_name, x, y, direction=90, scale=1)</code>               </td><td> Used to place multiple dots, such as bullets or particles. </td><td> <code>sprite_name</code>: Sprite name (string), <code>x</code>, <code>y</code>: Position (float), <code>direction</code>: Direction (float), <code>scale</code>: Scale (float)                                  </td></tr>
+    <tr><td> <code>display_text(sprite_name, x, y, direction=90, scale=1, is_vertical=True)</code>               </td><td> Displays text on the game screen. </td><td> <code>sprite_name</code>: Sprite name (string), <code>x</code>, <code>y</code>: Position (float), <code>direction</code>: Direction (float), <code>scale</code>: Scale (float), <code>is_vertical</code>: Vertical display (boolean)                                  </td></tr>
   </tbody>
 </table>
-<h2><a href="#notes" id="notes"></a>Notes</h2>
+<h2>Notes</h2>
 <ul>
   <li>Ensure that the Voxelamming app is running and connected to the same room name specified in your Python script.</li>
   <li>This library requires Python 3.9 or higher.</li>
   <li>Executing arbitrary Python code can be a security risk. Be cautious when running code from untrusted sources.</li>
 </ul>
 <p>This library is under active development. More features and improvements are planned for future releases.</p>
-<h2><a href="#license" id="license"></a>License</h2>
+<h2>License</h2>
 <p><a href="https://github.com/creativival/voxelamming/blob/master/LICENSE">MIT License</a></p>
-<h2><a href="#author" id="author"></a>Author</h2>
+<h2>Author</h2>
 <p>creativival</p>
+
+
 
 
 
