@@ -299,6 +299,9 @@ class Voxelamming:
     def send_game_over(self):
         self.commands.append('gameOver')
 
+    def send_game_clear(self):
+        self.commands.append('gameClear')
+
     def set_rotation_style(self, sprite_name, rotation_style='all around'):
         self.rotation_styles[sprite_name] = rotation_style
 
