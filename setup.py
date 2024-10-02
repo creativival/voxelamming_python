@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fp:
 
 setup(
     name='voxelamming',
-    version='0.3.6',
+    version='0.3.7',
     description='Convert Python code to JSON and send it to the Voxelamming app.',
     author='creativival',
     packages=find_packages(exclude=['.pytest_cache', 'tests', 'test_pypi']),  # 除外するフォルダを指定

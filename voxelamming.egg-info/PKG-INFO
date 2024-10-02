@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: voxelamming
-Version: 0.3.6
+Version: 0.3.7
 Summary: Convert Python code to JSON and send it to the Voxelamming app.
 Author: creativival
 Classifier: Development Status :: 3 - Alpha

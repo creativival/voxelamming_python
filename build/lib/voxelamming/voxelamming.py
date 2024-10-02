@@ -362,7 +362,7 @@ class Voxelamming:
 
         # （第二処理）スプライトが表示される場合、スプライトの移動データを配列に追加（これでスプライトが表示される）
         # visibleがTrueの場合、またはx, y, direction, scaleのいずれかがデフォルト値でないの場合
-        if visible or not(x == 0 and y == 0 and direction == 0 and scale == 1):
+        if visible or not (x == 0 and y == 0 and direction == 0 and scale == 1):
             x, y, direction = self.round_numbers([x, y, direction])
             x, y, direction, scale = map(str, [x, y, direction, scale])
             self.sprite_moves.append([sprite_name, x, y, direction, scale])
@@ -386,10 +386,27 @@ class Voxelamming:
         self.display_sprite_template(template_name, x, y, direction, 1)
 
     # テキストを表示する
-    # テキストの表示は、特別な名前（template_色_幅_高さ）のテンプレートとして表示する
+    # テキストの表示は、特別な名前（テキスト内容_色_縦横寄せ）のテンプレートとして表示する
     # 一度表示した後はテンプレートが自動で保存されているため、テンプレートをクローンとして表示できる
-    def display_text(self, text, x, y, direction=0, scale=1, color_id=7, is_vertical=False):
-        template_name = f'text_{text}_{color_id}_{"1" if is_vertical else "0"}'
+    def display_text(self, text, x, y, direction=0, scale=1, color_id=7, is_vertical=False, align=''):
+        # テキストの右寄せなどの情報を取得
+        text_format = ''
+        align = align.lower()
+        if 'top' in align:
+            text_format += 't'
+        elif 'bottom' in align:
+            text_format += 'b'
+        if 'left' in align:
+            text_format += 'l'
+        elif 'right' in align:
+            text_format += 'r'
+
+        if is_vertical:
+            text_format += 'v'
+        else:
+            text_format += 'h'
+
+        template_name = f'text_{text}_{color_id}_{text_format}'
         # display_sprite_templateと同じ処理
         self.display_sprite_template(template_name, x, y, direction, scale)
 
